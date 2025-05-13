@@ -1,5 +1,6 @@
 const { nanoid } = require("nanoid");
 const books = require('./books')
+const { intToBoolean, isStringContains } = require('./utils')
 
 const addBookHandler = (request, h) => {
     try {
@@ -23,8 +24,6 @@ const addBookHandler = (request, h) => {
             return response;
         }
 
-
-        console.log(`${JSON.stringify(request.payload)}`)
         var newBook = {
             "name": name,
             "year": year,
@@ -32,9 +31,9 @@ const addBookHandler = (request, h) => {
             "summary": summary,
             "publisher": publisher,
             "pageCount": pageCount,
-            "readPage": readPage,
-            "reading": reading,
-            "finished": finished,
+            "readPage": readPage || 0,
+            "reading": reading || false,
+            "finished": finished || false,
             "createdAt": new Date().toISOString(),
         }
         const newBookId = nanoid(16)
@@ -65,13 +64,45 @@ const addBookHandler = (request, h) => {
 
         throw 'Buku gagal ditambahkan'
     } catch (error) {
-        const response = h.response({
+        return h.response({
             status: 'fail',
             message: `${error}`,
-        });
-        response.code(500);
-        return response
+        }).code(500);
     }
 };
 
-module.exports = { addBookHandler };
+const getBooksHandler = (request, h) => {
+    try {
+
+        const { finished, name, reading } = request.query;
+        let filteredResultBooks = books
+        if (name) {
+            filteredResultBooks = filteredResultBooks.filter((book) => isStringContains(book.name, name || ""))
+        }
+
+        if (finished) {
+            filteredResultBooks = filteredResultBooks.filter((book) => book.finished == intToBoolean(finished))
+        }
+
+        if (reading) {
+            filteredResultBooks = filteredResultBooks.filter((book) => book.reading == intToBoolean(reading))
+        }
+
+        return h.response({
+            status: 'success',
+            data: {
+                books: filteredResultBooks
+            }
+        }).code(200);
+    } catch (error) {
+        return h.response({
+            status: 'fail',
+            message: `${error}`,
+
+        }).code(500);
+    }
+}
+
+
+
+module.exports = { addBookHandler, getBooksHandler };
