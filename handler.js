@@ -32,9 +32,10 @@ const addBookHandler = (request, h) => {
             "publisher": publisher,
             "pageCount": pageCount,
             "readPage": readPage || 0,
-            "reading": reading || false,
+            "reading": reading || true,
             "finished": finished || false,
             "createdAt": new Date().toISOString(),
+            "insertedAt": new Date().toISOString(),
         }
         const newBookId = nanoid(16)
         newBook.id = newBookId;
@@ -45,7 +46,6 @@ const addBookHandler = (request, h) => {
             newBook.finished = true
             newBook.reading = false
         }
-
         books.push(newBook)
 
         const isSuccess = books.filter((book) => book.id === newBookId).length > 0;
@@ -88,6 +88,12 @@ const getBooksHandler = (request, h) => {
             filteredResultBooks = filteredResultBooks.filter((book) => book.reading == intToBoolean(reading))
         }
 
+        filteredResultBooks = filteredResultBooks.map((book) => ({
+            id: book.id,
+            name: book.name,
+            publisher: book.publisher,
+        }))
+
         return h.response({
             status: 'success',
             data: {
@@ -103,6 +109,30 @@ const getBooksHandler = (request, h) => {
     }
 }
 
+const getBookByIdHandler = (request, h) => {
+    try {
+        const { bookId } = request.params;
+        console.log("cekk params ", bookId, request.params)
+        const filteredBook = books.filter((book) => book.id == bookId)
+        if (filteredBook.length == 0) {
+            return h.response({
+                status: 'fail',
+                message: "Buku tidak ditemukan"
+            }).code(404);
+        }
+
+        return h.response({
+            status: 'success',
+            data: { book: filteredBook[0] }
+        }).code(200);
+    } catch (error) {
+        return h.response({
+            status: "fail",
+            message: `${error}`
+        }).code(500)
+    }
+
+}
 
 
-module.exports = { addBookHandler, getBooksHandler };
+module.exports = { addBookHandler, getBooksHandler, getBookByIdHandler };
