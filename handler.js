@@ -141,7 +141,7 @@ const updateBookHandler = (request, h) => {
                 status: 'fail',
                 message: 'Gagal memperbarui buku. Id tidak ditemukan',
             });
-            response.code(400);
+            response.code(404);
             return response;
         }
 
@@ -182,7 +182,6 @@ const updateBookHandler = (request, h) => {
 
         books[bookIndex] = updatedBook
 
-
         const response = h.response({
             status: 'success',
             message: 'Buku berhasil diperbarui',
@@ -201,5 +200,36 @@ const updateBookHandler = (request, h) => {
     }
 };
 
+const deleteBookHandler = (request, h) => {
+    try {
+        const { bookId } = request.params;
+        const bookIndex = books.findIndex((book) => book.id == bookId);
+        console.log("🚀 ~ updateBookHandler ~ bookIndex:", bookIndex)
+        if (bookIndex == -1) {
+            const response = h.response({
+                status: 'fail',
+                message: 'Buku gagal dihapus. Id tidak ditemukan',
+            });
+            response.code(400);
+            return response;
+        }
 
-module.exports = { addBookHandler, getBooksHandler, getBookByIdHandler, updateBookHandler };
+        books.splice(bookIndex, 1)
+
+        const response = h.response({
+            status: 'success',
+            message: 'Buku berhasil dihapus',
+        });
+        response.code(200);
+        return response;
+
+    } catch (error) {
+        return h.response({
+            status: 'fail',
+            message: `${error}`,
+        }).code(500);
+    }
+};
+
+
+module.exports = { addBookHandler, getBooksHandler, getBookByIdHandler, updateBookHandler, deleteBookHandler };
