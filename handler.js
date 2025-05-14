@@ -43,7 +43,6 @@ const addBookHandler = (request, h) => {
 
         if (readPage == pageCount) {
             newBook.finished = true
-            newBook.reading = false
         }
         books.push(newBook)
 
@@ -204,13 +203,12 @@ const deleteBookHandler = (request, h) => {
     try {
         const { bookId } = request.params;
         const bookIndex = books.findIndex((book) => book.id == bookId);
-        console.log("🚀 ~ updateBookHandler ~ bookIndex:", bookIndex)
         if (bookIndex == -1) {
             const response = h.response({
                 status: 'fail',
                 message: 'Buku gagal dihapus. Id tidak ditemukan',
             });
-            response.code(400);
+            response.code(404);
             return response;
         }
 
@@ -219,6 +217,7 @@ const deleteBookHandler = (request, h) => {
         const response = h.response({
             status: 'success',
             message: 'Buku berhasil dihapus',
+            data: { books }
         });
         response.code(200);
         return response;
